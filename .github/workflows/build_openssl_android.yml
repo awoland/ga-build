@@ -19,6 +19,18 @@ jobs:
       fail-fast: false
 
     steps:
+    - name: 'Setup Java'
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: 'Setup Android NDK'
+      id: setup-ndk
+      uses: nttld/setup-ndk@v1
+      with:
+        ndk-version: 'r19c'
+
     - name: 'Get openssl'
       uses: actions/checkout@v3
       with:
