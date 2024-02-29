@@ -1,0 +1,124 @@
+name: linux-openssl
+
+
+on: [push]
+
+jobs:
+  Build-Libs-Linux-Ubuntu:
+    name: 'Build-Libs-Linux-Ubuntu'
+    runs-on: ubuntu-20.04
+    if: |
+      contains(github.event.head_commit.message, '[all]') ||
+      contains(github.event.head_commit.message, '[linux]') ||
+      contains(github.event.head_commit.message, '[linux-openssl]') ||
+      contains(github.event.head_commit.message, '[openssl]')    
+
+    strategy:
+      matrix:
+        arch: [x86, x86_64, arm32, arm64]
+      fail-fast: false
+
+    steps:
+
+    - name: Set up build environment
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      if: matrix.arch != 'arm32' && matrix.arch != 'arm64'  
+      with:
+        packages: gcc-multilib g++-multilib
+        version: 1.0
+        
+    - name: Set up build environment
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      if: matrix.arch != 'x86' && matrix.arch != 'x86_64'  
+      with:
+        packages: gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
+        version: 1.0    
+
+    - name: 'Get sources'
+      uses: actions/checkout@v3
+      with:
+        submodules: 'true'
+        fetch-depth: 10
+
+    - name: 'Get openssl'
+      uses: actions/checkout@v3
+      with:
+        repository: openssl/openssl
+        ref: OpenSSL_1_1_1t
+        path: openssl
+
+    - name: Build OpenSSL
+      run: |
+        cd openssl
+        mkdir build
+        case "${{ matrix.arch }}" in
+          x86)
+            mkdir build/x86 
+            ./Configure no-tests linux-x86 
+            make
+            cp libcrypto.a ./build/x86/libcrypto.a
+            cp libssl.a ./build/x86/libssl.a
+            ;;
+          x86_64)
+            mkdir build/x86_64
+            ./Configure no-tests linux-x86_64 
+            make
+            cp libcrypto.a ./build/x86_64/libcrypto.a
+            cp libssl.a ./build/x86_64/libssl.a
+            cp -a ./include/. ./build/include  
+            ;;
+          arm32)         
+            mkdir build/arm32 
+            ./Configure no-tests linux-armv4 --cross-compile-prefix=arm-linux-gnueabihf- 
+            make
+            cp libcrypto.a ./build/arm32/libcrypto.a
+            cp libssl.a ./build/arm32/libssl.a 
+            ;;
+          arm64)
+            mkdir build/arm64 
+            ./Configure no-tests linux-aarch64 --cross-compile-prefix=aarch64-linux-gnu- 
+            make
+            cp libcrypto.a ./build/arm64/libcrypto.a
+            cp libssl.a ./build/arm64/libssl.a
+            ;;
+        esac
+
+    - name: Archive Linux OpenSSL libs
+      uses: actions/upload-artifact@v3
+      with:
+        retention-days: 1
+        name: linux-openssl
+        path: '~/work/3rd-build-ga/3rd-build-ga/openssl/build'            
+
+
+  github-release:
+    name: GitHub Release
+    needs: Build-Libs-Linux-Ubuntu
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Setup | Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup | Artifacts
+        uses: actions/download-artifact@v2
+
+      - name: Setup | Checksums
+        run: for file in $(find ./ -name '*.a' ); do openssl dgst -sha256 -r "$file" | awk '{print $1}' > "${file}.sha256"; done
+
+      - name: Zip ALL
+        run: for file in *; do zip -r ${file%.*}.zip  $file; done
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: linux-openssl.zip
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true           
+        
+
+
+
