@@ -55,7 +55,7 @@ jobs:
       with:
         retention-days: 1
         name: android-openssl
-        path: '~/work/3rd-build-ga/3rd-build-ga/openssl/build'          
+        path: 'openssl/build/armeabi-v7a'          
       
   github-release:
     name: GitHub Release
