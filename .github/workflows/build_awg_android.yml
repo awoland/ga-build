@@ -28,7 +28,7 @@ jobs:
       id: setup-ndk
       uses: nttld/setup-ndk@v1
       with:
-        ndk-version: 'r19c'
+        ndk-version: 'r26b'
 
     - name: 'Get sources'
       uses: actions/checkout@v4
