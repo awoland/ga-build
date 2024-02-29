@@ -1,6 +1,6 @@
 name: android-awg
 
-on: [push]
+on: [workflow_dispatch]
 
 jobs:
 
