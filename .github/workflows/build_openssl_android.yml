@@ -1,6 +1,4 @@
 name: android-openssl
-
-
 on:
    workflow_dispatch:
    pull_request:
@@ -45,21 +43,17 @@ jobs:
       run: |
         cd openssl
         mkdir build
-          armeabi-v7a) 
             ANDROID_NDK_ROOT=$ANDROID_NDK_LATEST_HOME PATH=$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH ./Configure android-arm no-tests -U__ANDROID_API__ -D__ANDROID_API__=21 && PATH=$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH make
-            mkdir build/armeabi-v7a
+            mkdir -p build/armeabi-v7a
             cp libcrypto.a ./build/armeabi-v7a/libcrypto.a
             cp libssl.a ./build/armeabi-v7a/libssl.a
-            ;;
-        esac  
-
+        
     - name: Archive Android OpenSSL libs
       uses: actions/upload-artifact@v4
       with:
         retention-days: 1
         name: android-openssl
         path: '~/work/3rd-build-ga/3rd-build-ga/openssl/build'          
-
       
   github-release:
     name: GitHub Release
