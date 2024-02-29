@@ -40,15 +40,16 @@ jobs:
         path: openssl
 
     - name: 'Build OpenSSL Android'
+      env:
+      ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
       run: |
-        export ANDROID_NDK=$(pwd)/android-ndk-r19c
         cd openssl
         mkdir build
-            ANDROID_NDK_ROOT=$ANDROID_NDK PATH=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH ./Configure android-arm no-tests -U__ANDROID_API__ -D__ANDROID_API__=21 && PATH=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH make
+            ANDROID_NDK_ROOT=$ANDROID_NDK_HOME PATH=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH ./Configure android-arm no-tests -U__ANDROID_API__ -D__ANDROID_API__=21 && PATH=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH make
             mkdir build/armeabi-v7a
             cp libcrypto.a ./build/armeabi-v7a/libcrypto.a
             cp libssl.a ./build/armeabi-v7a/libssl.a
-        
+              
     - name: Archive Android OpenSSL libs
       uses: actions/upload-artifact@v4
       with:
