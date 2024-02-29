@@ -1,7 +1,9 @@
 name: libssh-android
 
-on: [push]
-
+on:
+   workflow_dispatch:
+   pull_request:
+   push:
 env:
   # Expected filename: https://zlib.net/zlib-${{env.ZLIB_VERSION}}.tar.gz
   ZLIB_VERSION: 1.3
