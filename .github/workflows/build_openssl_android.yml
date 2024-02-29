@@ -1,7 +1,10 @@
 name: android-openssl
 
 
-on: [push]
+on:
+   workflow_dispatch:
+   pull_request:
+   push:
 
 jobs:
   Build-Libs-OpenSSL-Android:
