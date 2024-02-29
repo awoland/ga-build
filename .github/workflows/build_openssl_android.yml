@@ -35,7 +35,7 @@ jobs:
         ndk-version: 'r19c'
 
     - name: 'Get openssl'
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: openssl/openssl
         ref: OpenSSL_1_1_1t
@@ -54,7 +54,7 @@ jobs:
         esac  
 
     - name: Archive Android OpenSSL libs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         retention-days: 1
         name: android-openssl
@@ -69,10 +69,10 @@ jobs:
 
     steps:
       - name: Setup | Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup | Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
 
       - name: Setup | Checksums
         run: for file in $(find ./ -name '*.a' ); do openssl dgst -sha256 -r "$file" | awk '{print $1}' > "${file}.sha256"; done
